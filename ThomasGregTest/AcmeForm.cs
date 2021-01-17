@@ -94,7 +94,7 @@ namespace ThomasGregTest
 
                 myConnection.Open();
 
-                string createDb = "CREATE TABLE TB_VOO ( ID_VOO INT, DATA_VOO TEXT, CUSTO DECIMAL(10, 5), DISTANCIA INT, CAPTURA INT, NIVEL_DOR INT )";
+                string createDb = "CREATE TABLE TB_VOO ( ID_VOO INT PRIMARY KEY, DATA_VOO TEXT, CUSTO DECIMAL(10, 2), DISTANCIA INT, CAPTURA INT, NIVEL_DOR INT )";
 
                 SQLiteCommand command = new SQLiteCommand( createDb, myConnection );
 
@@ -140,6 +140,25 @@ namespace ThomasGregTest
 
         private void Salvar_Click( object sender, EventArgs e )
         {
+            #region Item exists in DB?
+            bool exists = false;
+
+            SQLiteConnection conn = new SQLiteConnection( "Data Source=acme.sqlite" );
+            conn.Open();
+
+            SQLiteCommand cmd = conn.CreateCommand();
+
+            cmd.CommandText = "SELECT ID_VOO, DATA_VOO, CHAR(CAPTURA), NIVEL_DOR, CUSTO, DISTANCIA FROM TB_VOO WHERE ID_VOO = ?";
+            cmd.Parameters.Add( new SQLiteParameter { Value = this.IdSelected } );
+
+            using( SQLiteDataReader reader = cmd.ExecuteReader() )
+            {
+                exists = reader.Read();
+            }
+
+            conn.Close();
+            #endregion
+
             char captura = 'N';
 
             if( this.CHKCapturaSim.Checked )
@@ -152,67 +171,98 @@ namespace ThomasGregTest
             int nivelDor = (int)this.NumNivelDor.Value;
             string data = this.DTPData.Text;
 
-            SQLiteConnection conn = new SQLiteConnection( "Data Source=acme.sqlite" );
-            conn.Open();
+            if( exists )
+            {
+                conn = new SQLiteConnection( "Data Source=acme.sqlite" );
+                conn.Open();
 
-            SQLiteCommand cmd = conn.CreateCommand();
+                cmd = conn.CreateCommand();
 
-            cmd.CommandText = "INSERT INTO TB_VOO ( ID_VOO, DATA_VOO, CAPTURA, NIVEL_DOR, CUSTO, DISTANCIA ) VALUES ( ?, ?, ? , ?, ?, ?)";
-            cmd.Parameters.Add( new SQLiteParameter { Value = new Random().Next( 1, int.MaxValue ) } );
-            cmd.Parameters.Add(new SQLiteParameter { Value = data } );
-            cmd.Parameters.Add(new SQLiteParameter { Value = (int)captura } );
-            cmd.Parameters.Add(new SQLiteParameter { Value = nivelDor } );
-            cmd.Parameters.Add(new SQLiteParameter { Value = custo } );
-            cmd.Parameters.Add( new SQLiteParameter { Value = distancia } );
+                cmd.CommandText = "UPDATE TB_VOO SET DATA_VOO = ? , CAPTURA = ? , NIVEL_DOR = ? , CUSTO = ? , DISTANCIA = ? WHERE ID_VOO = ?";                
+                cmd.Parameters.Add( new SQLiteParameter { Value = data } );
+                cmd.Parameters.Add( new SQLiteParameter { Value = (int)captura } );
+                cmd.Parameters.Add( new SQLiteParameter { Value = nivelDor } );
+                cmd.Parameters.Add( new SQLiteParameter { Value = custo } );
+                cmd.Parameters.Add( new SQLiteParameter { Value = distancia } );
+                cmd.Parameters.Add( new SQLiteParameter { Value = this.IdSelected } );
 
-            cmd.ExecuteNonQuery();
+                cmd.ExecuteNonQuery();
 
-            conn.Close();
+                conn.Close();
+            }
+            else
+            {               
+                conn = new SQLiteConnection( "Data Source=acme.sqlite" );
+                conn.Open();
+
+                cmd = conn.CreateCommand();
+
+                cmd.CommandText = "INSERT INTO TB_VOO ( ID_VOO, DATA_VOO, CAPTURA, NIVEL_DOR, CUSTO, DISTANCIA ) VALUES ( ?, ?, ? , ?, ?, ?)";
+                cmd.Parameters.Add( new SQLiteParameter { Value = new Random().Next( 1, int.MaxValue ) } );
+                cmd.Parameters.Add( new SQLiteParameter { Value = data } );
+                cmd.Parameters.Add( new SQLiteParameter { Value = (int)captura } );
+                cmd.Parameters.Add( new SQLiteParameter { Value = nivelDor } );
+                cmd.Parameters.Add( new SQLiteParameter { Value = custo } );
+                cmd.Parameters.Add( new SQLiteParameter { Value = distancia } );
+
+                cmd.ExecuteNonQuery();
+
+                conn.Close();
+            }
 
             this.BTNSalvar.Enabled = false;
-            this.BTNSalvar.Enabled = false;
+            this.BTNCancelar.Enabled = false;
             this.LoadItemsToListView();
         }
 
         private void SelectListViewItem( object sender, EventArgs e )
         {
-           this.IdSelected = int.Parse( this.DBListView.SelectedItems[0].SubItems[0].Text);
-
-            SQLiteConnection conn = new SQLiteConnection( "Data Source=acme.sqlite" );
-            conn.Open();
-
-            SQLiteCommand cmd = conn.CreateCommand();
-
-            cmd.CommandText = "SELECT ID_VOO, DATA_VOO, CHAR(CAPTURA), NIVEL_DOR, CUSTO, DISTANCIA FROM TB_VOO WHERE ID_VOO = ?";
-            cmd.Parameters.Add( new SQLiteParameter { Value = this.IdSelected } );
-
-            using( SQLiteDataReader reader = cmd.ExecuteReader() )
+            if( this.DBListView.SelectedItems.Count > 0 )
             {
-                while( reader.Read() )
-                {                                                     
-                    this.DTPData.Text = reader[1].ToString();
+                this.IdSelected = int.Parse( this.DBListView.SelectedItems[0].SubItems[0].Text );
 
-                    if( reader[2].ToString()[0] == 'S' )
-                        this.CHKCapturaSim.Checked = true;
-                    else if( reader[2].ToString()[0] == 'N' )
-                        this.CHKCapturaNao.Checked = true;
+                SQLiteConnection conn = new SQLiteConnection( "Data Source=acme.sqlite" );
+                conn.Open();
 
-                    this.NumNivelDor.Value = Convert.ToDecimal( reader[3]);
-                    this.NumCusto.Value = Convert.ToDecimal( reader[4]);
-                    this.NUMDistancia.Value = Convert.ToDecimal( reader[5]);
+                SQLiteCommand cmd = conn.CreateCommand();
+
+                cmd.CommandText = "SELECT ID_VOO, DATA_VOO, CHAR(CAPTURA), NIVEL_DOR, CUSTO, DISTANCIA FROM TB_VOO WHERE ID_VOO = ?";
+                cmd.Parameters.Add( new SQLiteParameter { Value = this.IdSelected } );
+
+                using( SQLiteDataReader reader = cmd.ExecuteReader() )
+                {
+                    while( reader.Read() )
+                    {
+                        this.DTPData.Text = reader[1].ToString();
+
+                        if( reader[2].ToString()[0] == 'S' )
+                        {
+                            this.CHKCapturaSim.Checked = true;
+                            this.CHKCapturaNao.Checked = false;
+                        }
+                        else if( reader[2].ToString()[0] == 'N' )
+                        {
+                            this.CHKCapturaSim.Checked = false;
+                            this.CHKCapturaNao.Checked = true;
+                        }
+
+                        this.NumNivelDor.Value = Convert.ToDecimal( reader[3] );
+                        this.NumCusto.Value = Convert.ToDecimal( reader[4] );
+                        this.NUMDistancia.Value = Convert.ToDecimal( reader[5] );
+                    }
                 }
+
+                conn.Close();
+
+                this.BTNSalvar.Enabled = true;
+                this.BTNCancelar.Enabled = true;
             }
-
-            conn.Close();
-
-            this.BTNSalvar.Enabled = true;
-            this.BTNSalvar.Enabled = true;
         }
 
         private void Cancelar_Click( object sender, EventArgs e )
         {
             this.BTNSalvar.Enabled = false;
-            this.BTNSalvar.Enabled = false;
+            this.BTNCancelar.Enabled = false;
             this.LoadItemsToListView();
         }
 
@@ -231,6 +281,16 @@ namespace ThomasGregTest
             conn.Close();
 
             this.LoadItemsToListView();
+        }
+
+        private void CheckNao_Click( object sender, EventArgs e )
+        {
+            this.CHKCapturaSim.Checked = false;
+        }
+
+        private void CheckSim_Click( object sender, EventArgs e )
+        {
+            this.CHKCapturaNao.Checked = false;
         }
     }
 }

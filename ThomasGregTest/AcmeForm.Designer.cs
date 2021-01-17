@@ -78,7 +78,7 @@ namespace ThomasGregTest
             this.BTNExcluir.TabIndex = 1;
             this.BTNExcluir.Text = "Excluir";
             this.BTNExcluir.UseVisualStyleBackColor = true;
-            this.BTNExcluir.Click += new System.EventHandler( this.Excluir_Click );
+            this.BTNExcluir.Click += new System.EventHandler(this.Excluir_Click);
             // 
             // LBLData
             // 
@@ -110,7 +110,7 @@ namespace ThomasGregTest
             // CHKCapturaSim
             // 
             this.CHKCapturaSim.AutoSize = true;
-            this.CHKCapturaSim.Checked = true;
+            this.CHKCapturaSim.Checked = false;
             this.CHKCapturaSim.CheckState = System.Windows.Forms.CheckState.Checked;
             this.CHKCapturaSim.Location = new System.Drawing.Point(600, 176);
             this.CHKCapturaSim.Name = "CHKCapturaSim";
@@ -118,6 +118,7 @@ namespace ThomasGregTest
             this.CHKCapturaSim.TabIndex = 9;
             this.CHKCapturaSim.Text = "Sim";
             this.CHKCapturaSim.UseVisualStyleBackColor = true;
+            this.CHKCapturaSim.Click += new System.EventHandler( this.CheckSim_Click );
             // 
             // LBLNivelDor
             // 
@@ -146,7 +147,7 @@ namespace ThomasGregTest
             this.BTNCancelar.TabIndex = 12;
             this.BTNCancelar.Text = "Cancelar";
             this.BTNCancelar.UseVisualStyleBackColor = true;
-            this.BTNCancelar.Click += new System.EventHandler( this.Cancelar_Click );
+            this.BTNCancelar.Click += new System.EventHandler(this.Cancelar_Click);
             // 
             // DBListView
             // 
@@ -163,7 +164,8 @@ namespace ThomasGregTest
             this.DBListView.TabIndex = 13;
             this.DBListView.UseCompatibleStateImageBehavior = false;
             this.DBListView.View = System.Windows.Forms.View.Details;
-            this.DBListView.SelectedIndexChanged += new System.EventHandler(this.SelectListViewItem );
+            this.DBListView.SelectedIndexChanged += new System.EventHandler(this.SelectListViewItem);
+            this.DBListView.Columns[0].Width = 0;
             // 
             // CLNMID
             // 
@@ -190,6 +192,7 @@ namespace ThomasGregTest
             this.CHKCapturaNao.TabIndex = 14;
             this.CHKCapturaNao.Text = "Nao";
             this.CHKCapturaNao.UseVisualStyleBackColor = true;
+            this.CHKCapturaNao.Click += new System.EventHandler( this.CheckNao_Click );
             // 
             // LBLCaptura
             // 
@@ -247,7 +250,7 @@ namespace ThomasGregTest
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 304);
+            this.ClientSize = new System.Drawing.Size(806, 304);
             this.Controls.Add(this.NUMDistancia);
             this.Controls.Add(this.NumCusto);
             this.Controls.Add(this.DTPData);
